@@ -188,6 +188,12 @@ export default function ProfilePage() {
                 <div className="mt-8 pt-6 border-t border-[#E0E6DA] flex flex-wrap gap-4 items-center justify-between">
                   <div className="flex flex-wrap gap-3">
                     <Link
+                      href="/your-crops"
+                      className="rounded-xl border border-[#245B3F] bg-[#E8F0E4] px-4 py-2.5 text-xs sm:text-sm font-bold text-[#245B3F] shadow-sm transition hover:bg-[#D9E6D4]"
+                    >
+                      🌱 View Your Tracked Crops ↗
+                    </Link>
+                    <Link
                       href="/mandi-prices"
                       className="rounded-xl bg-[#245B3F] px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-[#19442D]"
                     >

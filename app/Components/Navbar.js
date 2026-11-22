@@ -24,6 +24,10 @@ export default function Navbar() {
           <Link href="/mandi-prices" className="transition hover:text-[#56815D]">
             Mandi Prices
           </Link>
+          <Link href="/your-crops" className="transition hover:text-[#56815D] flex items-center gap-1 font-semibold text-[#245B3F]">
+            <span>🌱</span>
+            <span>Your Crops</span>
+          </Link>
           <Link href="/crop-suggestions" className="transition hover:text-[#56815D]">
             Crop Suggestions
           </Link>
@@ -91,20 +95,27 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile sub-navigation when logged in */}
-      {isAuthenticated && (
-        <div className="flex md:hidden items-center justify-around border-t border-[#DCE4D6] bg-[#F5F1E6] px-3 py-2 text-xs font-semibold text-[#203B2B]">
-          <Link href="/mandi-prices" className="hover:text-[#56815D]">
-            Mandi Prices
+      {/* Mobile sub-navigation bar */}
+      <div className="flex md:hidden items-center justify-around border-t border-[#DCE4D6] bg-[#F5F1E6] px-3 py-2 text-xs font-semibold text-[#203B2B]">
+        <Link href="/mandi-prices" className="hover:text-[#56815D]">
+          Prices
+        </Link>
+        <Link href="/your-crops" className="text-[#245B3F] font-bold">
+          🌱 Your Crops
+        </Link>
+        <Link href="/crop-suggestions" className="hover:text-[#56815D]">
+          Crops
+        </Link>
+        {isAuthenticated ? (
+          <Link href="/profile" className="hover:text-[#56815D]">
+            👤 Profile
           </Link>
-          <Link href="/crop-suggestions" className="hover:text-[#56815D]">
-            Crops
+        ) : (
+          <Link href="/login" className="hover:text-[#56815D]">
+            Login
           </Link>
-          <Link href="/profile" className="text-[#245B3F] font-bold underline underline-offset-4">
-            👤 My Profile
-          </Link>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }

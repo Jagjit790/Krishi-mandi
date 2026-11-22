@@ -1369,6 +1369,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
 
 const districts = [
   "Amritsar",
@@ -1446,6 +1448,7 @@ export default function MandiPriceSearch({
     : "";
   const shouldAutoSearch = Boolean(initialCrop && validInitialDistrict);
 
+  const { user } = useAuth();
   const [crop, setCrop] = useState(initialCrop);
   const [district, setDistrict] = useState(validInitialDistrict);
   const [records, setRecords] = useState([]);
@@ -1453,6 +1456,28 @@ export default function MandiPriceSearch({
   const [message, setMessage] = useState("");
   const [total, setTotal] = useState(null);
   const [locationMessage, setLocationMessage] = useState("");
+  const [recentCrops, setRecentCrops] = useState([]);
+
+  const loadRecentCrops = async () => {
+    try {
+      const url = user?.krishiId
+        ? `/api/crops/searched?krishiId=${encodeURIComponent(user.krishiId)}&limit=6`
+        : `/api/crops/searched?limit=6`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.crops)) {
+        setRecentCrops(data.crops);
+      }
+    } catch (err) {
+      console.error("Failed to load recent crops:", err);
+    }
+  };
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadRecentCrops();
+    });
+  }, [user]);
 
   async function searchPrices(searchCrop = crop.trim(), searchDistrict = district) {
     if (!searchCrop || !searchDistrict) {
@@ -1488,6 +1513,23 @@ export default function MandiPriceSearch({
       setTotal(data.total ?? null);
       setStatus(data.records?.length ? "success" : "empty");
 
+      // Auto-save searched crop and govt API records to database
+      if (data.records && data.records.length > 0) {
+        fetch("/api/crops/save-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            crop: searchCrop,
+            district: searchDistrict,
+            krishiId: user?.krishiId || null,
+            farmerName: user?.name || null,
+            records: data.records,
+          }),
+        })
+          .then(() => loadRecentCrops())
+          .catch((e) => console.error("Auto-save search error:", e));
+      }
+
       if (!data.records?.length) {
         setMessage(
           "No matching records were returned. Try another crop or district."
@@ -1507,7 +1549,9 @@ export default function MandiPriceSearch({
   // When opened from a link with ?crop=...&district=..., search right away.
   useEffect(() => {
     if (shouldAutoSearch) {
-      searchPrices(initialCrop, validInitialDistrict);
+      queueMicrotask(() => {
+        searchPrices(initialCrop, validInitialDistrict);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1736,6 +1780,39 @@ const latestDate = cropRecords
           </button>
         </div>
       </form>
+
+      {/* Quick Tracked Crops chips */}
+      {recentCrops.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-[#557A4D] flex items-center gap-1">
+            <span>🌱</span> Your Searched Crops:
+          </span>
+          {recentCrops.map((item) => (
+            <button
+              key={item._id}
+              type="button"
+              onClick={() => {
+                setCrop(item.crop);
+                setDistrict(item.district);
+                searchPrices(item.crop, item.district);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#C8D6BF] bg-white px-3 py-1 text-xs text-[#203B2B] shadow-sm transition hover:bg-[#E8F0E4] hover:border-[#245B3F]"
+            >
+              <span className="font-semibold capitalize">{item.crop}</span>
+              <span className="text-[#718074]">({item.district})</span>
+              {item.modalPrice && (
+                <span className="font-mono font-bold text-[#245B3F]">₹{item.modalPrice}</span>
+              )}
+            </button>
+          ))}
+          <Link
+            href="/your-crops"
+            className="text-xs font-semibold text-[#245B3F] hover:underline ml-1"
+          >
+            View All in Your Crops →
+          </Link>
+        </div>
+      )}
 
       {/* Results */}
       
