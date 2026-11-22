@@ -1,4 +1,5 @@
 
+import Link from "next/link";
 import MandiPriceSearch from "./MandiPriceSearch";
 import Navbar from "../Components/Navbar";
 
@@ -8,7 +9,14 @@ export const metadata = {
     "Check reported agricultural market prices across Punjab with Krishi Saathi.",
 };
 
-export default function MandiPricesPage() {
+export default async function MandiPricesPage({ searchParams }) {
+  // Supports links like /mandi-prices?crop=Wheat&district=Ludhiana
+  const params = await searchParams;
+  const initialCrop =
+    typeof params?.crop === "string" ? params.crop.trim().slice(0, 80) : "";
+  const initialDistrict =
+    typeof params?.district === "string" ? params.district.trim() : "";
+
   return (
     <main className="min-h-screen bg-[#F5F1E6] text-[#203B2B]">
       {/* Header */}
@@ -32,7 +40,10 @@ export default function MandiPricesPage() {
         </div>
 
         {/* Search and results are handled by the client component */}
-        <MandiPriceSearch />
+        <MandiPriceSearch
+          initialCrop={initialCrop}
+          initialDistrict={initialDistrict}
+        />
 
         {/* Nearby mandi section */}
         {/* <section
