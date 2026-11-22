@@ -18,6 +18,16 @@ const actions = [
     href: "/crop-suggestions",
     icon: "🌱",
   },
+
+  {
+    number: "03",
+    title: "Smart Mandi Finder",
+    description:
+      "Compare nearby mandis, estimate transport costs and calculate your potential profit.",
+    href: "/smart-mandi-finder",
+    icon: "📊",
+  },
+
 ];
 
 const steps = [
@@ -172,7 +182,9 @@ export default function Home() {
             </p>
           </Reveal>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+          
+          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
             {actions.map((action, index) => (
               <Reveal
                 key={action.number}
