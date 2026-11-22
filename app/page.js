@@ -1,5 +1,7 @@
 
 import Reveal from "./Components/Reveal";
+import Navbar from "./Components/Navbar";
+import FarmerWelcomeBanner from "./Components/FarmerWelcomeBanner";
 
 const actions = [
   {
@@ -56,42 +58,14 @@ export default function Home() {
     <main className="min-h-screen overflow-x-clip bg-[#F5F1E6] text-[#203B2B]">
       {/* Navbar */}
       <Reveal y={-15} duration={0.6}>
-        <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-12">
-          <a href="/" className="flex items-center gap-2">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#245B3F] text-xl text-white">
-              🌾
-            </span>
-            <span className="text-xl font-bold tracking-tight">
-              Krishi Saathi
-            </span>
-          </a>
-
-          <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
-            <a href="#how-it-works" className="hover:text-[#56815D]">
-              How it works
-            </a>
-            <a href="#features" className="hover:text-[#56815D]">
-              Features
-            </a>
-          </nav>
-
-          <a
-            href="#features"
-            className="rounded-full bg-[#245B3F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#19442D]"
-          >
-            Get Started ↗
-          </a>
-        </header>
+        <Navbar />
       </Reveal>
 
       {/* Hero */}
       <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-16 pt-10 lg:grid-cols-2 lg:px-12 lg:pb-24 lg:pt-16">
         <div>
           <Reveal delay={0.05}>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#C8D6BF] bg-white/60 px-4 py-2 text-sm">
-              <span className="h-2 w-2 rounded-full bg-[#56815D]" />
-              Smarter decisions for better farming
-            </div>
+            <FarmerWelcomeBanner />
           </Reveal>
 
           <Reveal delay={0.15} y={45}>

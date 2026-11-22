@@ -416,7 +416,7 @@ const latestDate = cropRecords
             </p>
 
             <h2 className="mt-2 text-3xl font-bold">
-              Today's mandi prices
+              Today&apos;s mandi prices
             </h2>
 
             <p className="mt-2 text-sm text-[#607064]">

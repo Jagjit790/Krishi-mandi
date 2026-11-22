@@ -2,6 +2,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import Navbar from "../Components/Navbar";
 
 const districts = [
   "Amritsar",
@@ -512,25 +514,9 @@ export default function SmartMandiFinderPage() {
 
   return (
     <main className="min-h-screen bg-[#F5F1E6] text-[#203B2B]">
-      <header className="border-b border-[#DCE3D6]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-12">
-          <a href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#245B3F] text-xl text-white">
-              🌾
-            </span>
-            <span className="text-xl font-bold tracking-tight">
-              Krishi Saathi
-            </span>
-          </a>
-
-          <a
-            href="/"
-            className="text-sm font-semibold text-[#245B3F] hover:text-[#56815D]"
-          >
-            ← Home
-          </a>
-        </div>
-      </header>
+      <div className="border-b border-[#DCE3D6]">
+        <Navbar />
+      </div>
 
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-12 lg:py-14">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#56815D]">
