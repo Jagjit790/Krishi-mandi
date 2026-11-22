@@ -2,6 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Navbar from "../Components/Navbar";
 
 const districts = [
   "Amritsar",
@@ -41,7 +42,6 @@ function formatRupees(value) {
 
   return `₹${Math.round(Number(value)).toLocaleString("en-IN")}`;
 }
-
 
 function getDateValue(value) {
   if (!value) return 0;
@@ -285,6 +285,7 @@ export default function SmartMandiFinderPage() {
         );
       });
 
+      
       // Keep the newest available record for each market.
       const marketMap = new Map();
 
@@ -512,25 +513,9 @@ export default function SmartMandiFinderPage() {
 
   return (
     <main className="min-h-screen bg-[#F5F1E6] text-[#203B2B]">
-      <header className="border-b border-[#DCE3D6]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-12">
-          <a href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#245B3F] text-xl text-white">
-              🌾
-            </span>
-            <span className="text-xl font-bold tracking-tight">
-              Krishi Saathi
-            </span>
-          </a>
-
-          <a
-            href="/"
-            className="text-sm font-semibold text-[#245B3F] hover:text-[#56815D]"
-          >
-            ← Home
-          </a>
-        </div>
-      </header>
+      <div className="border-b border-[#DCE3D6]">
+        <Navbar />
+      </div>
 
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-12 lg:py-14">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#56815D]">
@@ -666,112 +651,7 @@ export default function SmartMandiFinderPage() {
               )}
             </label>
 
-            <label className="text-sm font-medium">
-              Vehicle type
-              <select
-                className={inputClass}
-                value={vehicle}
-                onChange={(event) => {
-                  const selected = event.target.value;
-                  setVehicle(selected);
 
-                  const defaults = {
-                    tractor: "5",
-                    pickup: "10",
-                    truck: "4",
-                  };
-
-                  setMileage(defaults[selected]);
-                }}
-              >
-                <option value="tractor">Tractor</option>
-                <option value="pickup">Pickup / small vehicle</option>
-                <option value="truck">Truck</option>
-              </select>
-            </label>
-
-            <label className="text-sm font-medium">
-              Vehicle mileage (km per litre)
-              <input
-                className={inputClass}
-                type="number"
-                min="0.1"
-                step="any"
-                value={mileage}
-                onChange={(event) => setMileage(event.target.value)}
-                required
-              />
-            </label>
-
-            <label className="text-sm font-medium">
-              Diesel price (₹ per litre)
-              <input
-                className={inputClass}
-                type="number"
-                min="0"
-                step="any"
-                value={dieselPrice}
-                onChange={(event) =>
-                  setDieselPrice(event.target.value)
-                }
-                required
-              />
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="mt-7 w-full rounded-xl bg-[#245B3F] px-6 py-4 font-semibold text-white transition hover:bg-[#19442D] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-          >
-            {status === "loading"
-              ? "Searching mandi prices..."
-              : "Find and compare mandis →"}
-          </button>
-        </form>
-
-        {message && (
-          <div
-            role="status"
-            className={`mt-5 rounded-xl border p-4 text-sm leading-6 ${
-              status === "error"
-                ? "border-red-200 bg-red-50 text-red-800"
-                : "border-[#DCE3D6] bg-white text-[#607064]"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-
-        {status === "success" && (
-          <section className="mt-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#56815D]">
-              Market comparison
-            </p>
-
-            <h2 className="mt-2 text-3xl font-semibold">
-              Estimated returns by mandi
-            </h2>
-
-            <p className="mt-3 leading-7 text-[#607064]">
-              Mandis are ranked by estimated profit after transport
-              costs. Road distances and travel times depend on the
-              routing service.
-            </p>
-
-            <div className="mt-6 rounded-2xl border border-[#C8D6BF] bg-[#EAF0E5] p-5">
-              <h3 className="font-semibold">
-                How profit is calculated
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-[#607064]">
-                Profit = (quantity × modal price) − cultivation
-                cost − transport cost − other selling expenses.
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-[#607064]">
-                Round-trip fuel cost = (round-trip distance ÷
-                vehicle mileage) × diesel price.
               </p>
 
               <p className="mt-2 text-xs leading-5 text-[#607064]">
@@ -1033,23 +913,25 @@ export default function SmartMandiFinderPage() {
                                   event.target.value
                                 )
                               }
-                              className="w-28 rounded-lg border border-[#DCE3D6] bg-white px-3 py-2"
+                              className="w-32 rounded-lg border border-[#DCE3D6] px-3 py-2"
                             />
                           </td>
 
-                          <td
-                            className={`p-4 font-semibold ${
-                              market.profit !== null &&
-                              market.profit < 0
-                                ? "text-red-700"
-                                : "text-[#245B3F]"
-                            }`}
-                          >
-                            {formatRupees(market.profit)}
+                          <td className="p-4 font-semibold">
+                            <span
+                              className={
+                                market.profit !== null &&
+                                market.profit < 0
+                                  ? "text-red-700"
+                                  : "text-[#245B3F]"
+                              }
+                            >
+                              {formatRupees(market.profit)}
+                            </span>
                           </td>
 
                           <td className="p-4">
-                            {market.Arrival_Date || "—"}
+                            {market.Arrival_Date || "Not provided"}
                           </td>
                         </tr>
                       ))}
@@ -1059,23 +941,23 @@ export default function SmartMandiFinderPage() {
               </div>
             )}
 
-            <p className="mt-6 text-xs leading-5 text-[#718074]">
-              Source: data.gov.in through your existing API.
-              Government prices may be delayed and may vary by crop
-              variety and quality. Route data depends on location
-              matching and the routing service. Estimated profits
-              are not guaranteed sale returns.
-            </p>
+
           </section>
         )}
 
         {status === "empty" && (
-          <div className="mt-5 rounded-xl border border-[#DCE3D6] bg-white p-4 text-sm text-[#607064]">
-            Try another crop or district. The API may not have
-            matching market records for your search.
+          <div className="mt-8 rounded-2xl border border-[#DCE3D6] bg-white p-6">
+            <h2 className="text-xl font-semibold">
+              No matching mandis found
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#607064]">
+              Try changing the crop name or selecting another
+              district.
+            </p>
           </div>
         )}
       </div>
     </main>
   );
 }
+
