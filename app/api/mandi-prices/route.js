@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 const MAX_LIMIT = 50;
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const REQUEST_TIMEOUT = 20000;
 
 // Temporary in-memory cache
 const cache = new Map();
@@ -11,40 +12,18 @@ const cache = new Map();
 const pendingRequests = new Map();
 
 export async function GET(request) {
-  const apiKey = process.env.DATA_GOV_API_KEY;
-  const resourceId = process.env.DATA_GOV_RESOURCE_ID;
+  const proxyUrl = process.env.GOV_PROXY_URL;
+  const proxySecret = process.env.GOV_PROXY_SECRET;
 
-  if (!apiKey || !resourceId) {
+  if (!proxyUrl || !proxySecret) {
     return NextResponse.json(
       {
         success: false,
-        error: "Government API configuration is missing.",
+        error: "Government API proxy configuration is missing.",
       },
       { status: 500 }
     );
   }
-  // TEMPORARY: Test government API connectivity
-  // TEMPORARY: Test outbound HTTPS connectivity
-const hosts = [
-  "https://example.com",
-  "https://api.data.gov.in",
-];
-
-for (const host of hosts) {
-  try {
-    const response = await fetch(host, {
-      signal: AbortSignal.timeout(10000),
-    });
-
-    console.log("HOST TEST:", host, response.status);
-  } catch (error) {
-    console.log("HOST TEST FAILED:", host, {
-      message: error.message,
-      code: error.cause?.code,
-      address: error.cause?.address,
-    });
-  }
-}
 
   const searchParams = new URL(request.url).searchParams;
 
@@ -113,13 +92,10 @@ for (const host of hosts) {
     }
   }
 
-  // 3. Fetch fresh data
+  // 3. Fetch fresh data through Cloudflare Worker
   const fetchPromise = (async () => {
-    const url = new URL(
-      `https://api.data.gov.in/resource/${encodeURIComponent(resourceId)}`
-    );
+    const url = new URL(proxyUrl);
 
-    url.searchParams.set("api-key", apiKey);
     url.searchParams.set("format", "json");
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("filters[State]", "Punjab");
@@ -128,13 +104,24 @@ for (const host of hosts) {
     url.searchParams.set("sort[Arrival_Date]", "desc");
 
     const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "x-proxy-secret": proxySecret,
+        Accept: "application/json",
+      },
       cache: "no-store",
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT),
     });
+
+    if (!response.ok) {
+      throw new Error(
+        `Cloudflare proxy returned status ${response.status}`
+      );
+    }
 
     const data = await response.json();
 
-    if (!response.ok || data.status === "error") {
+    if (data.status === "error") {
       throw new Error("Government API request failed.");
     }
 
@@ -171,7 +158,11 @@ for (const host of hosts) {
       fetchedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Mandi API request failed:", error.message);
+    console.error("Mandi API request failed:", {
+      message: error.message,
+      cause: error.cause?.message || null,
+      code: error.cause?.code || null,
+    });
 
     // 4. If fresh fetch fails, use expired cached data if available
     const oldData = cache.get(cacheKey);
@@ -190,7 +181,7 @@ for (const host of hosts) {
         success: false,
         error:
           error.name === "TimeoutError"
-            ? "Government market data took too long to respond. Please try again."
+            ? "Market data took too long to respond. Please try again."
             : "Unable to connect to the government market data service.",
       },
       { status: 502 }
