@@ -266,7 +266,7 @@ export async function GET(request) {
       stale: false,
       fetchedAt: new Date().toISOString(),
     });
-  } } catch (error) {
+  } catch (error) {
   console.error("Crop API detailed error:", {
     name: error.name,
     message: error.message,
