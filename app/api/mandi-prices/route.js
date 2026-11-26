@@ -23,6 +23,30 @@ export async function GET(request) {
       { status: 500 }
     );
   }
+  // TEMPORARY: Test government API connectivity
+try {
+  const testUrl = new URL(
+    `https://api.data.gov.in/resource/${encodeURIComponent(resourceId)}`
+  );
+
+  testUrl.searchParams.set("api-key", apiKey);
+  testUrl.searchParams.set("format", "json");
+  testUrl.searchParams.set("limit", "1");
+
+  const testResponse = await fetch(testUrl.toString(), {
+    signal: AbortSignal.timeout(15000),
+  });
+
+  console.log("Connectivity test status:", testResponse.status);
+  console.log("Connectivity test successful:", testResponse.ok);
+} catch (error) {
+  console.error("Connectivity test failed:", {
+    message: error.message,
+    cause: error.cause?.message,
+    code: error.cause?.code,
+    address: error.cause?.address,
+  });
+}
 
   const searchParams = new URL(request.url).searchParams;
 
