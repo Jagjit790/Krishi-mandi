@@ -1,26 +1,10 @@
 
 import { NextResponse } from "next/server";
 
-const districtAliases = {
-  "ferozepur": "Ferozpur",
-  "ferozpur": "Ferozpur",
-  "sahibzada ajit singh nagar": "SAS Nagar",
-  "mohali": "SAS Nagar",
-  "sbs nagar": "Shaheed Bhagat Singh Nagar",
-  "nawanshahr": "Shaheed Bhagat Singh Nagar",
-  "ropar": "Rupnagar",
-  "muktsar": "Sri Muktsar Sahib",
-};
-
-const districts = [
-  "Amritsar", "Barnala", "Bathinda", "Faridkot",
-  "Fatehgarh Sahib", "Fazilka", "Ferozpur", "Gurdaspur",
-  "Hoshiarpur", "Jalandhar", "Kapurthala", "Ludhiana",
-  "Malerkotla", "Mansa", "Moga", "Pathankot", "Patiala",
-  "Rupnagar", "Sangrur", "SAS Nagar",
-  "Shaheed Bhagat Singh Nagar", "Sri Muktsar Sahib",
-  "Tarn Taran",
-];
+import {
+  districts,
+  districtAliases,
+} from "@/lib/constants/districts";
 
 function matchDistrict(value) {
   if (!value) return null;

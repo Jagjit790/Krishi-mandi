@@ -553,7 +553,7 @@ export default function YourCropsPage() {
                       </button>
 
                       <Link
-                        href={`/mandi-prices?crop=${encodeURIComponent(item.crop)}&district=${encodeURIComponent(item.district)}`}
+                        href={`/mandi-prices`}
                         className="rounded-xl bg-[#245B3F] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#19442D] shadow-sm flex items-center gap-1"
                       >
                         <span>Analyze Mandi</span>

@@ -72,7 +72,7 @@ export default function Home() {
             <h1 className="max-w-xl text-5xl font-semibold leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl">
               Grow better.
               <br />
-              <span className="text-[#56815D]">Earn smarter.</span>
+              <span className="text-amber-500">Earn smarter.</span>
             </h1>
           </Reveal>
 

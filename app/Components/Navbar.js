@@ -24,9 +24,8 @@ export default function Navbar() {
           <Link href="/mandi-prices" className="transition hover:text-[#56815D]">
             Mandi Prices
           </Link>
-          <Link href="/your-crops" className="transition hover:text-[#56815D] flex items-center gap-1 font-semibold text-[#245B3F]">
-            <span>🌱</span>
-            <span>Your Crops</span>
+          <Link href="/your-crops"  className="transition hover:text-[#56815D]">
+            Your Crops
           </Link>
           <Link href="/crop-suggestions" className="transition hover:text-[#56815D]">
             Crop Suggestions
