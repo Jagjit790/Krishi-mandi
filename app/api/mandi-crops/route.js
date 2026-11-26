@@ -186,6 +186,28 @@ export async function GET(request) {
     );
   }
 
+  // TEMPORARY: Test outbound HTTPS connectivity
+const hosts = [
+  "https://example.com",
+  "https://api.data.gov.in",
+];
+
+for (const host of hosts) {
+  try {
+    const response = await fetch(host, {
+      signal: AbortSignal.timeout(10000),
+    });
+
+    console.log("HOST TEST:", host, response.status);
+  } catch (error) {
+    console.log("HOST TEST FAILED:", host, {
+      message: error.message,
+      code: error.cause?.code,
+      address: error.cause?.address,
+    });
+  }
+}
+
   const searchParams = new URL(request.url).searchParams;
   const district = searchParams.get("district")?.trim() || "";
 
