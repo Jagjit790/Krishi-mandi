@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 const PAGE_LIMIT = 1000;
@@ -53,7 +54,8 @@ function getCutoffDate() {
   return cutoff.toISOString().slice(0, 10);
 }
 
-async function fetchDistrictCrops(apiKey, resourceId, district) {
+// Fetch crops through Cloudflare Worker
+async function fetchDistrictCrops(proxyUrl, proxySecret, district) {
   const uniqueCrops = new Map();
 
   const cutoffDate = getCutoffDate();
@@ -63,11 +65,8 @@ async function fetchDistrictCrops(apiKey, resourceId, district) {
   let reachedCutoff = false;
 
   while (!reachedCutoff) {
-    const url = new URL(
-      `https://api.data.gov.in/resource/${encodeURIComponent(resourceId)}`
-    );
+    const url = new URL(proxyUrl);
 
-    url.searchParams.set("api-key", apiKey);
     url.searchParams.set("format", "json");
     url.searchParams.set("limit", String(PAGE_LIMIT));
     url.searchParams.set("offset", String(offset));
@@ -78,13 +77,18 @@ async function fetchDistrictCrops(apiKey, resourceId, district) {
     url.searchParams.set("sort[Arrival_Date]", "desc");
 
     const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "x-proxy-secret": proxySecret,
+        Accept: "application/json",
+      },
       cache: "no-store",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
     });
 
     if (!response.ok) {
       throw new Error(
-        `Government API returned status ${response.status}`
+        `Cloudflare proxy returned status ${response.status}`
       );
     }
 
@@ -160,53 +164,30 @@ async function fetchDistrictCrops(apiKey, resourceId, district) {
   );
 
   return {
-  success: true,
-  district,
-  periodDays: DAYS_BACK,
-  total: crops.length,
-  rawRecordsTotal: totalRecords,
-  uniqueCrops: crops.length,
-  crops,
-  source: "data.gov.in",
-};
+    success: true,
+    district,
+    periodDays: DAYS_BACK,
+    total: crops.length,
+    rawRecordsTotal: totalRecords,
+    uniqueCrops: crops.length,
+    crops,
+    source: "data.gov.in",
+  };
 }
 
-
 export async function GET(request) {
-  const apiKey = process.env.DATA_GOV_API_KEY;
-  const resourceId = process.env.DATA_GOV_RESOURCE_ID;
+  const proxyUrl = process.env.GOV_PROXY_URL;
+  const proxySecret = process.env.GOV_PROXY_SECRET;
 
-  if (!apiKey || !resourceId) {
+  if (!proxyUrl || !proxySecret) {
     return NextResponse.json(
       {
         success: false,
-        error: "Government API configuration is missing.",
+        error: "Government API proxy configuration is missing.",
       },
       { status: 500 }
     );
   }
-
-  // TEMPORARY: Test outbound HTTPS connectivity
-const hosts = [
-  "https://example.com",
-  "https://api.data.gov.in",
-];
-
-for (const host of hosts) {
-  try {
-    const response = await fetch(host, {
-      signal: AbortSignal.timeout(10000),
-    });
-
-    console.log("HOST TEST:", host, response.status);
-  } catch (error) {
-    console.log("HOST TEST FAILED:", host, {
-      message: error.message,
-      code: error.cause?.code,
-      address: error.cause?.address,
-    });
-  }
-}
 
   const searchParams = new URL(request.url).searchParams;
   const district = searchParams.get("district")?.trim() || "";
@@ -265,10 +246,10 @@ for (const host of hosts) {
     }
   }
 
-  // 3. Fetch fresh data
+  // 3. Fetch fresh data through Cloudflare
   const fetchPromise = fetchDistrictCrops(
-    apiKey,
-    resourceId,
+    proxyUrl,
+    proxySecret,
     district
   );
 
@@ -289,36 +270,32 @@ for (const host of hosts) {
       fetchedAt: new Date().toISOString(),
     });
   } catch (error) {
-  console.error("Crop API detailed error:", {
-    name: error.name,
-    message: error.message,
-    cause: error.cause,
-    causeMessage: error.cause?.message,
-    code: error.cause?.code,
-    stack: error.stack,
-  });
-
-  if (cached) {
-    return NextResponse.json({
-      ...cached.data,
-      cached: true,
-      stale: true,
-    });
-  }
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: error.message,
-      errorName: error.name,
+    console.error("Crop API detailed error:", {
+      name: error.name,
+      message: error.message,
       cause: error.cause?.message || null,
       code: error.cause?.code || null,
-    },
-    { status: 502 }
-  );
-} finally {
-  pendingRequests.delete(cacheKey);
-}
+    });
 
-}
+    if (cached) {
+      return NextResponse.json({
+        ...cached.data,
+        cached: true,
+        stale: true,
+      });
+    }
 
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+        errorName: error.name,
+        cause: error.cause?.message || null,
+        code: error.cause?.code || null,
+      },
+      { status: 502 }
+    );
+  } finally {
+    pendingRequests.delete(cacheKey);
+  }
+}
