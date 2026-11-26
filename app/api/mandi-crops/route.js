@@ -266,30 +266,37 @@ export async function GET(request) {
       stale: false,
       fetchedAt: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error("Crop API error:", error.message);
+  } } catch (error) {
+  console.error("Crop API detailed error:", {
+    name: error.name,
+    message: error.message,
+    cause: error.cause,
+    causeMessage: error.cause?.message,
+    code: error.cause?.code,
+    stack: error.stack,
+  });
 
-    // Use expired cached data if available
-    if (cached) {
-      return NextResponse.json({
-        ...cached.data,
-        cached: true,
-        stale: true,
-      });
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          error.name === "TimeoutError"
-            ? "Government crop data took too long to respond. Please try again."
-            : error.message,
-      },
-      { status: 502 }
-    );
-  } finally {
-    pendingRequests.delete(cacheKey);
+  if (cached) {
+    return NextResponse.json({
+      ...cached.data,
+      cached: true,
+      stale: true,
+    });
   }
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: error.message,
+      errorName: error.name,
+      cause: error.cause?.message || null,
+      code: error.cause?.code || null,
+    },
+    { status: 502 }
+  );
+} finally {
+  pendingRequests.delete(cacheKey);
+}
+
 }
 
