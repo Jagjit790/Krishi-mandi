@@ -10,12 +10,12 @@ export async function GET(request) {
     );
   }
 
-  const apiKey = process.env.DATA_GOV_API_KEY;
-  const resourceId = process.env.DATA_GOV_RESOURCE_ID;
+  const proxyUrl = process.env.GOV_PROXY_URL;
+  const proxySecret = process.env.GOV_PROXY_SECRET;
 
-  if (!apiKey || !resourceId) {
+  if (!proxyUrl || !proxySecret) {
     return NextResponse.json(
-      { success: false, error: "API configuration is missing." },
+      { success: false, error: "Proxy configuration is missing." },
       { status: 500 }
     );
   }
@@ -49,11 +49,9 @@ export async function GET(request) {
     );
   }
 
-  const url = new URL(
-    `https://api.data.gov.in/resource/${encodeURIComponent(resourceId)}`
-  );
+  // Build Cloudflare Worker URL
+  const url = new URL(proxyUrl);
 
-  url.searchParams.set("api-key", apiKey);
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("offset", String(offset));
@@ -72,6 +70,11 @@ export async function GET(request) {
 
   try {
     const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "x-proxy-secret": proxySecret,
+        Accept: "application/json",
+      },
       cache: "no-store",
       signal: AbortSignal.timeout(20000),
     });
@@ -118,7 +121,11 @@ export async function GET(request) {
       records: data.records,
     });
   } catch (error) {
-    console.error("Test API error:", error.message);
+    console.error("Test API error:", {
+      message: error.message,
+      cause: error.cause?.message || null,
+      code: error.cause?.code || null,
+    });
 
     return NextResponse.json(
       {
